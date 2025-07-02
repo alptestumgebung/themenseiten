@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fortbildung in Bayern - Vernetzungsportal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'bavaria-blue': '#003c81',
+                        'bavaria-blue-light': '#1e5aa8',
+                        'bavaria-blue-lighter': '#4a7bc8',
+                        'bavaria-accent': '#f8f9fa'
+                    },
+                    fontFamily: {
+                        'roboto': ['Roboto', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .hero-video {
+            object-fit: cover;
+            width: 100%;
+            height: 100%;
+        }
+        .search-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 60, 129, 0.2);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .fade-out {
+            opacity: 0;
+            transform: scale(0.95);
+            transition: all 0.3s ease;
+        }
+        .fade-in {
+            opacity: 1;
+            transform: scale(1);
+            transition: all 0.3s ease;
+        }
+        .theme-image {
+            border-radius: 8px;
+            object-fit: cover;
+        }
+        .card-image-overlay {
+            position: relative;
+            overflow: hidden;
+            border-radius: 0.75rem 0.75rem 0 0;
+        }
+        .card-image-overlay img {
+            transition: transform 0.3s ease;
+        }
+        .card-hover:hover .card-image-overlay img {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body class="font-roboto bg-gray-50" x-data="fibsApp()">
+    
+    <!-- Hero Section -->
+    <section class="relative h-96 overflow-hidden">
+        <video class="hero-video absolute inset-0 z-0" autoplay loop muted>
+            <source src="https://download.sodix.de/api/content/data/SODIX-0001129420.mp4" type="video/mp4">
+        </video>
+        <div class="absolute inset-0 bg-bavaria-blue bg-opacity-70 z-10"></div>
+        <div class="relative z-20 h-full flex items-center justify-center">
+            <div class="text-center text-white max-w-4xl mx-auto px-6">
+                <h1 class="text-3xl md:text-4xl font-bold mb-4">Fortbildung in Bayern</h1>
+                <p class="text-lg md:text-xl font-light mb-8">Gemeinsam. Kompetent. Zukunftsorientiert.</p>
+                
+                <!-- Search Box in Hero -->
+                <div class="max-w-md mx-auto">
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            x-model="searchTerm"
+                            placeholder="Themen suchen..."
+                            class="search-input w-full px-6 py-4 rounded-full text-bavaria-blue font-medium text-lg border-0 shadow-lg"
+                        >
+                        <div class="absolute right-4 top-1/2 transform -translate-y-1/2">
+                            <svg class="w-6 h-6 text-bavaria-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Introduction Text -->
+    <section class="py-8 bg-white" x-show="!isSearchActive" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-bavaria-blue mb-4">Liebe Akteure der bayerischen Lehrkräftefortbildung</h2>
+                <p class="text-base text-gray-700 max-w-4xl mx-auto leading-relaxed">
+                    Für eine bessere Vernetzung und Auffindbarkeit aller Fortbildungsangebote in FIBS ist die korrekte 
+                    Verschlagwortung entscheidend. Hier finden Sie alle aktuellen Themenseiten mit den passenden 
+                    Schlagworten. Verwenden Sie diese bei der Einstellung Ihrer Fortbildungen in FIBS, damit 
+                    Lehrkräfte alle relevanten Angebote zu einem Thema finden können.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Themes Section -->
+    <section class="py-8 bg-bavaria-accent" x-show="hasVisibleMainThemes || !isSearchActive" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+        <div class="max-w-4xl mx-auto px-6">
+            <h3 class="text-xl font-bold text-bavaria-blue mb-6 text-center">Schwerpunktthemen</h3>
+            
+            <!-- Main 4 Themes Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <template x-for="theme in mainThemes" :key="theme.id">
+                    <div 
+                        x-show="isVisible(theme)"
+                        :class="{'fade-out': !isVisible(theme), 'fade-in': isVisible(theme)}"
+                        class="card-hover bg-white rounded-lg shadow-md border border-gray-200 hover:border-bavaria-blue-lighter overflow-hidden"
+                    >
+                        <!-- Image -->
+                        <div class="card-image-overlay h-24">
+                            <img 
+                                :src="theme.image" 
+                                :alt="theme.title"
+                                class="w-full h-full object-cover"
+                            >
+                        </div>
+                        
+                        <!-- Content -->
+                        <div class="p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <h5 class="text-base font-semibold text-bavaria-blue" x-text="theme.title"></h5>
+                                <button 
+                                    @click="copyKeyword(theme.keyword, $event)"
+                                    class="bg-bavaria-blue hover:bg-bavaria-blue-light text-white px-2 py-1 rounded text-xs font-medium flex items-center gap-1 group transition-all duration-200 flex-shrink-0"
+                                >
+                                    <span x-text="theme.keyword"></span>
+                                    <span class="text-xs opacity-60 group-hover:opacity-100 transition-opacity">📋</span>
+                                </button>
+                            </div>
+                            <p class="text-gray-600 text-xs mb-3" x-text="theme.description"></p>
+                            <a 
+                                :href="theme.link" 
+                                class="text-bavaria-blue hover:text-bavaria-blue-light text-xs font-medium transition-colors"
+                            >
+                                Zur Themenseite →
+                            </a>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </section>
+
+    <!-- Existing Themes Section -->
+    <section class="py-8 bg-white" x-show="hasVisibleExistingThemes || !isSearchActive" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+        <div class="max-w-4xl mx-auto px-6">
+            <h3 class="text-xl font-bold text-bavaria-blue mb-6 text-center">Bestehende Themenseiten</h3>
+            
+            <!-- Additional Themes Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                
+                <template x-for="theme in existingThemes" :key="theme.id">
+                    <div 
+                        x-show="isVisible(theme)"
+                        :class="{'fade-out': !isVisible(theme), 'fade-in': isVisible(theme)}"
+                        class="card-hover bg-white rounded-lg shadow-md border border-gray-200 hover:border-bavaria-blue-lighter overflow-hidden"
+                    >
+                        <!-- Image -->
+                        <div class="card-image-overlay h-24">
+                            <img 
+                                :src="theme.image" 
+                                :alt="theme.title"
+                                class="w-full h-full object-cover"
+                            >
+                        </div>
+                        
+                        <!-- Content -->
+                        <div class="p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <h5 class="text-base font-semibold text-bavaria-blue" x-text="theme.title"></h5>
+                                <button 
+                                    @click="copyKeyword(theme.keyword, $event)"
+                                    class="bg-bavaria-blue-lighter hover:bg-bavaria-blue text-white px-2 py-1 rounded text-xs font-medium flex items-center gap-1 group transition-all duration-200 flex-shrink-0"
+                                >
+                                    <span x-text="theme.keyword"></span>
+                                    <span class="text-xs opacity-60 group-hover:opacity-100 transition-opacity">📋</span>
+                                </button>
+                            </div>
+                            <p class="text-gray-600 text-xs mb-3" x-text="theme.description"></p>
+                            <a 
+                                :href="theme.link" 
+                                class="text-bavaria-blue hover:text-bavaria-blue-light text-xs font-medium transition-colors"
+                            >
+                                Zur Themenseite →
+                            </a>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </section>
+
+    <!-- Planned Themes Section -->
+    <section class="py-8 bg-bavaria-accent" x-show="hasVisiblePlannedThemes || !isSearchActive" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+        <div class="max-w-4xl mx-auto px-6">
+            <h3 class="text-xl font-bold text-bavaria-blue mb-6 text-center">Geplante Themenseiten</h3>
+            
+            <!-- Planned Themes Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                
+                <template x-for="theme in plannedThemes" :key="theme.id">
+                    <div 
+                        x-show="isVisible(theme)"
+                        :class="{'fade-out': !isVisible(theme), 'fade-in': isVisible(theme)}"
+                        class="card-hover bg-white rounded-lg shadow-md border border-gray-200 hover:border-bavaria-blue-lighter overflow-hidden"
+                    >
+                        <!-- Image -->
+                        <div class="card-image-overlay h-24">
+                            <img 
+                                :src="theme.image" 
+                                :alt="theme.title"
+                                class="w-full h-full object-cover"
+                            >
+                        </div>
+                        
+                        <!-- Content -->
+                        <div class="p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <h5 class="text-base font-semibold text-bavaria-blue" x-text="theme.title"></h5>
+                                <button 
+                                    @click="copyKeyword(theme.keyword, $event)"
+                                    class="bg-bavaria-blue-lighter hover:bg-bavaria-blue text-white px-2 py-1 rounded text-xs font-medium flex items-center gap-1 group transition-all duration-200 flex-shrink-0"
+                                >
+                                    <span x-text="theme.keyword"></span>
+                                    <span class="text-xs opacity-60 group-hover:opacity-100 transition-opacity">📋</span>
+                                </button>
+                            </div>
+                            <p class="text-gray-600 text-xs mb-3" x-text="theme.description"></p>
+                            <div class="text-bavaria-blue-lighter text-xs font-medium">
+                                <span class="inline-flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    In Planung
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-bavaria-blue text-white py-8">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <p class="text-bavaria-blue-lighter">
+                © Akademie für Lehrerfortbildung und Personalführung Dillingen (ALP) • 
+                <a href="#" class="hover:text-white transition-colors">Kontakt</a> • 
+                <a href="#" class="hover:text-white transition-colors">Impressum</a>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        function fibsApp() {
+            return {
+                searchTerm: '',
+                
+                mainThemes: [
+                    {
+                        id: 1,
+                        title: 'Kompetenzorientierung',
+                        keyword: 'kompetenz',
+                        description: 'Förderung kompetenzorientierten Unterrichts und Weiterentwicklung der Lehrpläne entsprechend dem LehrplanPLUS.',
+                        link: '#kompetenzorientierung',
+                        image: 'https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=400&h=300&fit=crop&crop=center'
+                    },
+                    {
+                        id: 2,
+                        title: 'Prüfungskultur',
+                        keyword: 'pruefungskultur',
+                        description: 'Innovative Leistungserhebungen, digitale Prüfungsformate und lernförderliches Feedback.',
+                        link: '#pruefungskultur',
+                        image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&h=300&fit=crop&crop=center'
+                    },
+                    {
+                        id: 3,
+                        title: 'Gesundheit & Resilienz',
+                        keyword: 'gesundheit',
+                        description: 'Stärkung der psychischen Gesundheit und Resilienz von Schülerinnen und Schülern sowie Lehrkräften.',
+                        link: '#gesundheit',
+                        image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&h=300&fit=crop&crop=center'
+                    },
+                    {
+                        id: 4,
+                        title: 'Digitalisierung & KI',
+                        keyword: 'digital',
+                        description: 'Medienkompetenz, digitale Bildung und verantwortlicher Umgang mit Künstlicher Intelligenz.',
+                        link: '#digitalisierung',
+                        image: 'https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=400&h=300&fit=crop&crop=center'
+                    }
+                ],
+                
+                existingThemes: [
+                    {
+                        id: 5,
+                        title: 'Bayerisches Lesescreening',
+                        keyword: 'GS-BYLES',
+                        description: 'Fortbildungen zum Bayerischen Lesescreening (BYLES) für alle bayerischen Grundschulen',
+                        link: 'https://fibs.alp.dillingen.de/themenseiten/bayerisches-lesescreening/startseite',
+                        image: 'https://fibs.alp.dillingen.de/fileadmin/_processed_/3/1/csm_byles-header_V3sm_3dc96fbb69.jpg'
+                    },
+                    {
+                        id: 6,
+                        title: 'BaSiS',
+                        keyword: 'GS-BASIS',
+                        description: 'Informationspaket der ALP zur Einführung und Umsetzung des Sprachstandserhebungsverfahrens',
+                        link: 'https://fibs.alp.dillingen.de/themenseiten/basis/startseite',
+                        image: 'https://fibs.alp.dillingen.de/fileadmin/_processed_/a/2/csm_BaSiS-Header_40accbaea6.jpg'
+                    },
+                    {
+                        id: 7,
+                        title: 'Gesundheit in der Schule',
+                        keyword: 'Lehrergesundheit',
+                        description: 'Gesundheit und Resilienz stärken: Praxisnahe Ansätze für den Schulalltag',
+                        link: 'https://fibs.alp.dillingen.de/themenseiten/gesundheit-in-der-schule/startseite',
+                        image: 'https://fibs.alp.dillingen.de/fileadmin/_processed_/4/1/csm_Gesundheit_in_der_Schule_Headergrafik_c3d35c4053.jpg'
+                    },
+                    {
+                        id: 8,
+                        title: 'Bayern-Allianz gegen Desinformation',
+                        keyword: 'BAgD',
+                        description: 'Kompetenzen zum Erkennen und Einordnen von Falschinformationen im digitalen Raum',
+                        link: 'https://fibs.alp.dillingen.de/themenseiten/ueber-die-bayern-allianz-gegen-desinformation',
+                        image: 'https://fibs.alp.dillingen.de/fileadmin/_processed_/8/4/csm_BAGD-Header_0c6e024e17.jpg'
+                    },
+                    {
+                        id: 9,
+                        title: 'Sexuelle Gewalt – Prävention und Intervention',
+                        keyword: 'Prävention_sG',
+                        description: 'Fortbildungen zur Stärkung der Handlungskompetenz bei sexueller und sexualisierter Gewalt',
+                        link: 'https://fibs.alp.dillingen.de/themenseiten/sexuelle-gewalt-praevention-und-intervention/startseite',
+                        image: 'https://fibs.alp.dillingen.de/fileadmin/_processed_/5/6/csm_SG-Kachelgrafik_a0097ec4eb.jpg'
+                    }
+                ],
+                
+                plannedThemes: [
+                    {
+                        id: 10,
+                        title: 'LehrKraftStärken',
+                        keyword: 'LKS',
+                        description: 'Hier finden sich Angebote der staatlichen Schulberatung zum Thema LehrKraftStärken.',
+                        link: null, // In Planung
+                        image: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=400&h=300&fit=crop&crop=center'
+                    },
+                    {
+                        id: 11,
+                        title: 'Startchancen-Programm',
+                        keyword: 'Startchancen',
+                        description: 'Das Startchancen-Programm unterstützt Schulen in herausfordernden sozialen Umfeldern bei der nachhaltigen Verbesserung der Lern- und Bildungsperspektiven ihrer Schülerinnen und Schüler für mehr Chancengerechtigkeit.',
+                        link: null, // In Planung
+                        image: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=300&fit=crop&crop=center'
+                    }
+                ],
+                
+                isVisible(item) {
+                    if (this.searchTerm.length === 0) {
+                        return true;
+                    }
+                    const searchLower = this.searchTerm.toLowerCase();
+                    return item.title.toLowerCase().includes(searchLower) || 
+                           item.keyword.toLowerCase().includes(searchLower) ||
+                           item.description.toLowerCase().includes(searchLower);
+                },
+                
+                get isSearchActive() {
+                    return this.searchTerm.length > 0;
+                },
+                
+                get hasVisibleMainThemes() {
+                    return this.mainThemes.some(theme => this.isVisible(theme));
+                },
+                
+                get hasVisibleExistingThemes() {
+                    return this.existingThemes.some(theme => this.isVisible(theme));
+                },
+                
+                get hasVisiblePlannedThemes() {
+                    return this.plannedThemes.some(theme => this.isVisible(theme));
+                },
+                
+                async copyKeyword(keyword, event) {
+                    try {
+                        await navigator.clipboard.writeText(keyword);
+                        
+                        // Visual feedback
+                        const button = event.target.closest('button');
+                        const originalText = button.innerHTML;
+                        button.innerHTML = `<span class="text-green-200">✓ Kopiert!</span>`;
+                        
+                        setTimeout(() => {
+                            button.innerHTML = originalText;
+                        }, 1500);
+                    } catch (err) {
+                        // Fallback for older browsers
+                        console.log('Clipboard API not available, keyword: ' + keyword);
+                        
+                        // Show fallback message
+                        const button = event.target.closest('button');
+                        const originalText = button.innerHTML;
+                        button.innerHTML = `<span class="text-yellow-200">Manuell kopieren: ${keyword}</span>`;
+                        
+                        setTimeout(() => {
+                            button.innerHTML = originalText;
+                        }, 2500);
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
