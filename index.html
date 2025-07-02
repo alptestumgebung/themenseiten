@@ -70,8 +70,8 @@
 </head>
 <body class="font-roboto bg-gray-50" x-data="fibsApp()">
     
-    <!-- Hero Section -->
-    <section class="relative h-96 overflow-hidden">
+    <!-- Hero Section - Normal Mode -->
+    <section class="relative h-96 overflow-hidden" x-show="!isSearchActive">
         <video class="hero-video absolute inset-0 z-0" autoplay loop muted>
             <source src="https://download.sodix.de/api/content/data/SODIX-0001129420.mp4" type="video/mp4">
         </video>
@@ -89,12 +89,37 @@
                             x-model="searchTerm"
                             placeholder="Themen suchen..."
                             class="search-input w-full px-6 py-4 rounded-full text-bavaria-blue font-medium text-lg border-0 shadow-lg"
+                            @focus="focusedInput = 'normal'"
                         >
                         <div class="absolute right-4 top-1/2 transform -translate-y-1/2">
                             <svg class="w-6 h-6 text-bavaria-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Hero Section - Search Mode -->
+    <section class="bg-bavaria-blue py-6" x-show="isSearchActive">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="max-w-md mx-auto">
+                <div class="relative">
+                    <input 
+                        type="text" 
+                        x-model="searchTerm"
+                        placeholder="Themen suchen..."
+                        class="search-input w-full px-6 py-4 rounded-full text-bavaria-blue font-medium text-lg border-0 shadow-lg"
+                        x-ref="searchInput"
+                        @focus="focusedInput = 'search'"
+                        x-init="$watch('isSearchActive', value => { if (value && focusedInput === 'normal') { $nextTick(() => $refs.searchInput.focus()) } })"
+                    >
+                    <div class="absolute right-4 top-1/2 transform -translate-y-1/2">
+                        <svg class="w-6 h-6 text-bavaria-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
                     </div>
                 </div>
             </div>
@@ -141,19 +166,25 @@
                         
                         <!-- Content -->
                         <div class="p-4">
-                            <div class="flex justify-between items-start mb-2">
-                                <h5 class="text-base font-semibold text-bavaria-blue" x-text="theme.title"></h5>
-                                <button 
-                                    @click="copyKeyword(theme.keyword, $event)"
-                                    class="bg-bavaria-blue hover:bg-bavaria-blue-light text-white px-2 py-1 rounded text-xs font-medium flex items-center gap-1 group transition-all duration-200 flex-shrink-0"
-                                >
-                                    <span x-text="theme.keyword"></span>
-                                    <span class="text-xs opacity-60 group-hover:opacity-100 transition-opacity">📋</span>
-                                </button>
+                            <div class="mb-2">
+                                <h5 class="text-base font-semibold text-bavaria-blue mb-2" x-text="theme.title"></h5>
+                                <!-- Keywords in own lines -->
+                                <div class="flex flex-col gap-1 mb-2">
+                                    <template x-for="keyword in theme.keywords" :key="keyword">
+                                        <button 
+                                            @click="copyKeyword(keyword, $event)"
+                                            class="bg-bavaria-blue hover:bg-bavaria-blue-light text-white px-2 py-1 rounded text-xs font-medium flex items-center gap-1 group transition-all duration-200 w-fit"
+                                        >
+                                            <span x-text="keyword"></span>
+                                            <span class="text-xs opacity-60 group-hover:opacity-100 transition-opacity">📋</span>
+                                        </button>
+                                    </template>
+                                </div>
                             </div>
                             <p class="text-gray-600 text-xs mb-3" x-text="theme.description"></p>
                             <a 
                                 :href="theme.link" 
+                                target="_blank"
                                 class="text-bavaria-blue hover:text-bavaria-blue-light text-xs font-medium transition-colors"
                             >
                                 Zur Themenseite →
@@ -190,19 +221,25 @@
                         
                         <!-- Content -->
                         <div class="p-4">
-                            <div class="flex justify-between items-start mb-2">
-                                <h5 class="text-base font-semibold text-bavaria-blue" x-text="theme.title"></h5>
-                                <button 
-                                    @click="copyKeyword(theme.keyword, $event)"
-                                    class="bg-bavaria-blue-lighter hover:bg-bavaria-blue text-white px-2 py-1 rounded text-xs font-medium flex items-center gap-1 group transition-all duration-200 flex-shrink-0"
-                                >
-                                    <span x-text="theme.keyword"></span>
-                                    <span class="text-xs opacity-60 group-hover:opacity-100 transition-opacity">📋</span>
-                                </button>
+                            <div class="mb-2">
+                                <h5 class="text-base font-semibold text-bavaria-blue mb-2" x-text="theme.title"></h5>
+                                <!-- Keywords in own lines -->
+                                <div class="flex flex-col gap-1 mb-2">
+                                    <template x-for="keyword in theme.keywords" :key="keyword">
+                                        <button 
+                                            @click="copyKeyword(keyword, $event)"
+                                            class="bg-bavaria-blue-lighter hover:bg-bavaria-blue text-white px-2 py-1 rounded text-xs font-medium flex items-center gap-1 group transition-all duration-200 w-fit"
+                                        >
+                                            <span x-text="keyword"></span>
+                                            <span class="text-xs opacity-60 group-hover:opacity-100 transition-opacity">📋</span>
+                                        </button>
+                                    </template>
+                                </div>
                             </div>
                             <p class="text-gray-600 text-xs mb-3" x-text="theme.description"></p>
                             <a 
                                 :href="theme.link" 
+                                target="_blank"
                                 class="text-bavaria-blue hover:text-bavaria-blue-light text-xs font-medium transition-colors"
                             >
                                 Zur Themenseite →
@@ -239,15 +276,20 @@
                         
                         <!-- Content -->
                         <div class="p-4">
-                            <div class="flex justify-between items-start mb-2">
-                                <h5 class="text-base font-semibold text-bavaria-blue" x-text="theme.title"></h5>
-                                <button 
-                                    @click="copyKeyword(theme.keyword, $event)"
-                                    class="bg-bavaria-blue-lighter hover:bg-bavaria-blue text-white px-2 py-1 rounded text-xs font-medium flex items-center gap-1 group transition-all duration-200 flex-shrink-0"
-                                >
-                                    <span x-text="theme.keyword"></span>
-                                    <span class="text-xs opacity-60 group-hover:opacity-100 transition-opacity">📋</span>
-                                </button>
+                            <div class="mb-2">
+                                <h5 class="text-base font-semibold text-bavaria-blue mb-2" x-text="theme.title"></h5>
+                                <!-- Keywords in own lines -->
+                                <div class="flex flex-col gap-1 mb-2">
+                                    <template x-for="keyword in theme.keywords" :key="keyword">
+                                        <button 
+                                            @click="copyKeyword(keyword, $event)"
+                                            class="bg-bavaria-blue-lighter hover:bg-bavaria-blue text-white px-2 py-1 rounded text-xs font-medium flex items-center gap-1 group transition-all duration-200 w-fit"
+                                        >
+                                            <span x-text="keyword"></span>
+                                            <span class="text-xs opacity-60 group-hover:opacity-100 transition-opacity">📋</span>
+                                        </button>
+                                    </template>
+                                </div>
                             </div>
                             <p class="text-gray-600 text-xs mb-3" x-text="theme.description"></p>
                             <div class="text-bavaria-blue-lighter text-xs font-medium">
@@ -280,37 +322,38 @@
         function fibsApp() {
             return {
                 searchTerm: '',
+                focusedInput: null,
                 
                 mainThemes: [
                     {
                         id: 1,
                         title: 'Kompetenzorientierung',
-                        keyword: 'kompetenz',
-                        description: 'Förderung kompetenzorientierten Unterrichts und Weiterentwicklung der Lehrpläne entsprechend dem LehrplanPLUS.',
+                        keywords: ['kompetenz'],
+                        description: 'Förderung kompetenzorientierten Unterrichts entsprechend dem LehrplanPLUS.',
                         link: '#kompetenzorientierung',
                         image: 'https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=400&h=300&fit=crop&crop=center'
                     },
                     {
                         id: 2,
                         title: 'Prüfungskultur',
-                        keyword: 'pruefungskultur',
-                        description: 'Innovative Leistungserhebungen, digitale Prüfungsformate und lernförderliches Feedback.',
+                        keywords: ['pruefungskultur'],
+                        description: 'Innovative Leistungserhebungen und digitale Prüfungsformate.',
                         link: '#pruefungskultur',
                         image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&h=300&fit=crop&crop=center'
                     },
                     {
                         id: 3,
                         title: 'Gesundheit & Resilienz',
-                        keyword: 'gesundheit',
-                        description: 'Stärkung der psychischen Gesundheit und Resilienz von Schülerinnen und Schülern sowie Lehrkräften.',
+                        keywords: ['gesundheit'],
+                        description: 'Stärkung der Gesundheit und Resilienz von Schülerinnen, Schülern und Lehrkräften.',
                         link: '#gesundheit',
                         image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&h=300&fit=crop&crop=center'
                     },
                     {
                         id: 4,
                         title: 'Digitalisierung & KI',
-                        keyword: 'digital',
-                        description: 'Medienkompetenz, digitale Bildung und verantwortlicher Umgang mit Künstlicher Intelligenz.',
+                        keywords: ['digital'],
+                        description: 'Medienkompetenz und verantwortlicher Umgang mit Künstlicher Intelligenz.',
                         link: '#digitalisierung',
                         image: 'https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=400&h=300&fit=crop&crop=center'
                     }
@@ -320,40 +363,40 @@
                     {
                         id: 5,
                         title: 'Bayerisches Lesescreening',
-                        keyword: 'GS-BYLES',
-                        description: 'Fortbildungen zum Bayerischen Lesescreening (BYLES) für alle bayerischen Grundschulen',
+                        keywords: ['GS-BYLES'],
+                        description: 'Fortbildungen zum Bayerischen Lesescreening für alle bayerischen Grundschulen.',
                         link: 'https://fibs.alp.dillingen.de/themenseiten/bayerisches-lesescreening/startseite',
                         image: 'https://fibs.alp.dillingen.de/fileadmin/_processed_/3/1/csm_byles-header_V3sm_3dc96fbb69.jpg'
                     },
                     {
                         id: 6,
                         title: 'BaSiS',
-                        keyword: 'GS-BASIS',
-                        description: 'Informationspaket der ALP zur Einführung und Umsetzung des Sprachstandserhebungsverfahrens',
+                        keywords: ['GS-BASIS'],
+                        description: 'Informationspaket der ALP zur Einführung des Sprachstandserhebungsverfahrens.',
                         link: 'https://fibs.alp.dillingen.de/themenseiten/basis/startseite',
                         image: 'https://fibs.alp.dillingen.de/fileadmin/_processed_/a/2/csm_BaSiS-Header_40accbaea6.jpg'
                     },
                     {
                         id: 7,
                         title: 'Gesundheit in der Schule',
-                        keyword: 'Lehrergesundheit',
-                        description: 'Gesundheit und Resilienz stärken: Praxisnahe Ansätze für den Schulalltag',
+                        keywords: ['Lehrergesundheit', 'psychische_Gesundheit_SuS'],
+                        description: 'Gesundheit und Resilienz stärken: Praxisnahe Ansätze für den Schulalltag.',
                         link: 'https://fibs.alp.dillingen.de/themenseiten/gesundheit-in-der-schule/startseite',
                         image: 'https://fibs.alp.dillingen.de/fileadmin/_processed_/4/1/csm_Gesundheit_in_der_Schule_Headergrafik_c3d35c4053.jpg'
                     },
                     {
                         id: 8,
                         title: 'Bayern-Allianz gegen Desinformation',
-                        keyword: 'BAgD',
-                        description: 'Kompetenzen zum Erkennen und Einordnen von Falschinformationen im digitalen Raum',
+                        keywords: ['AllianzGegenDesinformation'],
+                        description: 'Kompetenzen zum Erkennen von Falschinformationen im digitalen Raum.',
                         link: 'https://fibs.alp.dillingen.de/themenseiten/ueber-die-bayern-allianz-gegen-desinformation',
                         image: 'https://fibs.alp.dillingen.de/fileadmin/_processed_/8/4/csm_BAGD-Header_0c6e024e17.jpg'
                     },
                     {
                         id: 9,
                         title: 'Sexuelle Gewalt – Prävention und Intervention',
-                        keyword: 'Prävention_sG',
-                        description: 'Fortbildungen zur Stärkung der Handlungskompetenz bei sexueller und sexualisierter Gewalt',
+                        keywords: ['Prävention_sexuelle_Gewalt', 'Schutzkonzept_sexuelle_Gewalt'],
+                        description: 'Stärkung der Handlungskompetenz bei sexueller und sexualisierter Gewalt.',
                         link: 'https://fibs.alp.dillingen.de/themenseiten/sexuelle-gewalt-praevention-und-intervention/startseite',
                         image: 'https://fibs.alp.dillingen.de/fileadmin/_processed_/5/6/csm_SG-Kachelgrafik_a0097ec4eb.jpg'
                     }
@@ -363,16 +406,16 @@
                     {
                         id: 10,
                         title: 'LehrKraftStärken',
-                        keyword: 'LKS',
-                        description: 'Hier finden sich Angebote der staatlichen Schulberatung zum Thema LehrKraftStärken.',
+                        keywords: ['LehrKraftStärken_Handlungsfähigkeit', 'LehrKraftStärken_Selbstfürsorge', 'LehrKraftStärken_Beziehung', 'LehrKraftStärken_Struktur'],
+                        description: 'Angebote der staatlichen Schulberatung zum Thema LehrKraftStärken.',
                         link: null, // In Planung
                         image: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=400&h=300&fit=crop&crop=center'
                     },
                     {
                         id: 11,
                         title: 'Startchancen-Programm',
-                        keyword: 'Startchancen',
-                        description: 'Das Startchancen-Programm unterstützt Schulen in herausfordernden sozialen Umfeldern bei der nachhaltigen Verbesserung der Lern- und Bildungsperspektiven ihrer Schülerinnen und Schüler für mehr Chancengerechtigkeit.',
+                        keywords: ['SCP_Schulaufsicht', 'SCP_Schulleitung', 'SCP_Schulverwaltung', 'SCP_Schulentwicklung', 'SCP_Deutsch', 'SCP_Mathematik', 'SCP_Schulabschluss', 'SCP_Berufsausbildung', 'SCP_Sozialkompetenz', 'SCP_Erziehungspartnerschaft'],
+                        description: 'Unterstützung für Schulen in herausfordernden sozialen Umfeldern.',
                         link: null, // In Planung
                         image: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=300&fit=crop&crop=center'
                     }
@@ -384,7 +427,7 @@
                     }
                     const searchLower = this.searchTerm.toLowerCase();
                     return item.title.toLowerCase().includes(searchLower) || 
-                           item.keyword.toLowerCase().includes(searchLower) ||
+                           item.keywords.some(keyword => keyword.toLowerCase().includes(searchLower)) ||
                            item.description.toLowerCase().includes(searchLower);
                 },
                 
